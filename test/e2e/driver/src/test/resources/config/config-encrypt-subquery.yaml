@@ -1,0 +1,40 @@
+dataSources:
+  ds_0:
+    dataSourceClassName: com.zaxxer.hikari.HikariDataSource
+    driverClassName: com.mysql.cj.jdbc.Driver
+    jdbcUrl: jdbc:mysql://127.0.0.1:3306/mdb?serverTimezone=UTC&useSSL=false&characterEncoding=utf-8
+    username: root
+    password: root
+
+rules:
+- !ENCRYPT
+  tables:
+    teacher:
+      columns:
+        name:
+          cipher:
+            name: name
+            encryptorName: aes_encryptor
+        phone:
+          cipher:
+            name: phone
+            encryptorName: aes_encryptor
+    student:
+      columns:
+        name:
+          cipher:
+            name: name
+            encryptorName: aes_encryptor
+        phone:
+          cipher:
+            name: phone
+            encryptorName: aes_encryptor
+
+  encryptors:
+    aes_encryptor:
+      type: AES
+      props:
+        aes-key-value: 123456abc
+
+props:
+  sql-show: true

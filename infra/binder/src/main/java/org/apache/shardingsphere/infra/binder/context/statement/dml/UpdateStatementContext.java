@@ -22,6 +22,8 @@ import org.apache.shardingsphere.infra.binder.context.segment.table.TablesContex
 import org.apache.shardingsphere.infra.binder.context.statement.CommonSQLStatementContext;
 import org.apache.shardingsphere.infra.binder.context.type.TableAvailable;
 import org.apache.shardingsphere.infra.binder.context.type.WhereAvailable;
+import org.apache.shardingsphere.infra.metadata.ShardingSphereMetaData;
+import org.apache.shardingsphere.infra.metadata.ShardingSphereMetaDataAware;
 import org.apache.shardingsphere.sql.parser.sql.common.extractor.TableExtractor;
 import org.apache.shardingsphere.sql.parser.sql.common.segment.dml.column.ColumnSegment;
 import org.apache.shardingsphere.sql.parser.sql.common.segment.dml.expr.BinaryOperationExpression;
@@ -38,7 +40,7 @@ import java.util.LinkedList;
  * Update SQL statement context.
  */
 @Getter
-public final class UpdateStatementContext extends CommonSQLStatementContext implements TableAvailable, WhereAvailable {
+public final class UpdateStatementContext extends CommonSQLStatementContext implements TableAvailable, WhereAvailable, ShardingSphereMetaDataAware {
     
     private final TablesContext tablesContext;
     
@@ -47,9 +49,15 @@ public final class UpdateStatementContext extends CommonSQLStatementContext impl
     private final Collection<ColumnSegment> columnSegments = new LinkedList<>();
     
     private final Collection<BinaryOperationExpression> joinConditions = new LinkedList<>();
+    private final ShardingSphereMetaData shardingSphereMetaData;
     
-    public UpdateStatementContext(final UpdateStatement sqlStatement) {
+    public UpdateStatementContext( final UpdateStatement sqlStatement) {
+       this(null, sqlStatement);
+    }
+
+    public UpdateStatementContext(ShardingSphereMetaData metaData, final UpdateStatement sqlStatement) {
         super(sqlStatement);
+        this.shardingSphereMetaData = metaData;
         tablesContext = new TablesContext(getAllSimpleTableSegments(), getDatabaseType());
         getSqlStatement().getWhere().ifPresent(whereSegments::add);
         ColumnExtractor.extractColumnSegments(columnSegments, whereSegments);

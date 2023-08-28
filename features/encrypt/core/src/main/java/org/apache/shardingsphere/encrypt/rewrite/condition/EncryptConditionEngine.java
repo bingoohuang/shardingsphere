@@ -17,7 +17,16 @@
 
 package org.apache.shardingsphere.encrypt.rewrite.condition;
 
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import java.util.TreeSet;
 import lombok.RequiredArgsConstructor;
+import lombok.val;
 import org.apache.shardingsphere.encrypt.exception.syntax.UnsupportedEncryptSQLException;
 import org.apache.shardingsphere.encrypt.rewrite.condition.impl.EncryptBinaryCondition;
 import org.apache.shardingsphere.encrypt.rewrite.condition.impl.EncryptInCondition;
@@ -40,15 +49,6 @@ import org.apache.shardingsphere.sql.parser.sql.common.segment.dml.predicate.And
 import org.apache.shardingsphere.sql.parser.sql.common.segment.dml.predicate.WhereSegment;
 import org.apache.shardingsphere.sql.parser.sql.common.util.ColumnExtractor;
 import org.apache.shardingsphere.sql.parser.sql.common.util.ExpressionExtractUtils;
-
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-import java.util.TreeSet;
 
 /**
  * Encrypt condition engine.
@@ -167,8 +167,11 @@ public final class EncryptConditionEngine {
     }
     
     private Optional<EncryptCondition> createCompareEncryptCondition(final String tableName, final BinaryOperationExpression expression, final ExpressionSegment compareRightValue) {
-        if (!(expression.getLeft() instanceof ColumnSegment) || compareRightValue instanceof SubqueryExpressionSegment) {
+        if (!(expression.getLeft() instanceof ColumnSegment)) {
             return Optional.empty();
+        }
+        if (compareRightValue instanceof SubqueryExpressionSegment) {
+            return Optional.of(createEncryptBinaryOperationCondition((SubqueryExpressionSegment)compareRightValue));
         }
         if (compareRightValue instanceof SimpleExpressionSegment) {
             return Optional.of(createEncryptBinaryOperationCondition(tableName, expression, compareRightValue));
@@ -179,6 +182,11 @@ public final class EncryptConditionEngine {
         return Optional.empty();
     }
     
+    private EncryptBinaryCondition createEncryptBinaryOperationCondition(final SubqueryExpressionSegment subQuery) {
+        val c =  new EncryptBinaryCondition(null, null, null,0, 0, null);
+        c.setSubQuery(subQuery); // 此处只是借壳生蛋，借 EncryptBinaryCondition 的壳，设置 subQuery，便于后续处理
+        return c;
+    }
     private EncryptBinaryCondition createEncryptBinaryOperationCondition(final String tableName, final BinaryOperationExpression expression, final ExpressionSegment compareRightValue) {
         String columnName = ((ColumnSegment) expression.getLeft()).getIdentifier().getValue();
         return new EncryptBinaryCondition(columnName, tableName, expression.getOperator(), compareRightValue.getStartIndex(), expression.getStopIndex(), compareRightValue);

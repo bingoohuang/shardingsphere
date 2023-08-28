@@ -110,7 +110,6 @@ import org.apache.shardingsphere.sql.parser.sql.dialect.statement.mysql.dal.MySQ
 import org.apache.shardingsphere.sql.parser.sql.dialect.statement.mysql.dml.MySQLLoadDataStatement;
 import org.apache.shardingsphere.sql.parser.sql.dialect.statement.mysql.dml.MySQLLoadXMLStatement;
 import org.apache.shardingsphere.sql.parser.sql.dialect.statement.opengauss.ddl.OpenGaussCursorStatement;
-import org.apache.shardingsphere.sql.parser.sql.dialect.statement.oracle.dml.OracleMergeStatement;
 import org.apache.shardingsphere.sql.parser.sql.dialect.statement.sqlserver.dcl.SQLServerDenyUserStatement;
 
 import java.util.List;
@@ -152,10 +151,10 @@ public final class SQLStatementContextFactory {
             return new SelectStatementContext(metaData, params, (SelectStatement) sqlStatement, defaultDatabaseName);
         }
         if (sqlStatement instanceof UpdateStatement) {
-            return new UpdateStatementContext((UpdateStatement) sqlStatement);
+            return new UpdateStatementContext(metaData, (UpdateStatement) sqlStatement);
         }
         if (sqlStatement instanceof DeleteStatement) {
-            return new DeleteStatementContext((DeleteStatement) sqlStatement);
+            return new DeleteStatementContext(metaData, (DeleteStatement) sqlStatement);
         }
         if (sqlStatement instanceof InsertStatement) {
             return new InsertStatementContext(metaData, params, (InsertStatement) sqlStatement, defaultDatabaseName);
@@ -174,9 +173,6 @@ public final class SQLStatementContextFactory {
         }
         if (sqlStatement instanceof MySQLLoadXMLStatement) {
             return new LoadXMLStatementContext((MySQLLoadXMLStatement) sqlStatement);
-        }
-        if (sqlStatement instanceof OracleMergeStatement) {
-            return new MergeStatementContext((OracleMergeStatement) sqlStatement);
         }
         throw new UnsupportedSQLOperationException(String.format("Unsupported SQL statement `%s`", sqlStatement.getClass().getSimpleName()));
     }
